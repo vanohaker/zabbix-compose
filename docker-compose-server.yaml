@@ -1,0 +1,100 @@
+version: '3.5'
+services:
+  server:
+    image: zabbix/zabbix-server-pgsql:alpine-latest
+    ports:
+      - "10051:10051"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro 
+      - /usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - /usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - /var/lib/zabbix/export:/var/lib/zabbix/export:rw
+      - /var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - /var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - /var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+      - /var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps:ro
+    restart: always
+    depends_on:
+      - postgres-server
+    environment:
+      - POSTGRES_USER=zabbix
+      - POSTGRES_PASSWORD=zabbix
+      - POSTGRES_DB=zabbixNew
+      - ZBX_HISTORYSTORAGETYPES=log,text #Zabbix configuration variables
+      - ZBX_DEBUGLEVEL=1
+      - ZBX_HOUSEKEEPINGFREQUENCY=1
+      - ZBX_MAXHOUSEKEEPERDELETE=5000
+  web-nginx-pgsql:
+    image: zabbix/zabbix-web-nginx-pgsql:alpine-latest
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/ssl/nginx:/etc/ssl/nginx:ro
+      - /usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    sysctls:
+      - net.core.somaxconn=65535
+    restart: always
+    depends_on:
+      - server
+      - postgres-server
+    environment:
+      - POSTGRES_USER=zabbix
+      - POSTGRES_PASSWORD=zabbix
+      - POSTGRES_DB=zabbixNew
+      - ZBX_SERVER_HOST=server
+      - ZBX_POSTMAXSIZE=64M
+      - PHP_TZ=Europe/Moscow
+      - ZBX_MAXEXECUTIONTIME=500
+  agent:
+    image: zabbix/zabbix-agent:alpine-latest
+    ports:
+      - "10050:10050"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
+      - /var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+      - /var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+      - /var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+    privileged: true
+    pid: "host"
+    restart: always
+    depends_on:
+      - server
+    environment:
+      - ZBX_SERVER_HOST=server
+  snmptraps:
+    image: zabbix/zabbix-snmptraps:alpine-latest
+    ports:
+      - "162:1162/udp"
+    volumes:
+      - /var/lib/zabbix/snmptraps:/var/lib/zabbix/snmptraps:rw
+    restart: always
+    depends_on:
+      - server
+    environment:
+      - ZBX_SERVER_HOST=zabbix-server
+  postgres-server:
+    image: postgres:latest
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=zabbix
+      - POSTGRES_USER=zabbix
+      - POSTGRES_DB=zabbix
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

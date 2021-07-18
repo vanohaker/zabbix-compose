@@ -28,11 +28,10 @@ services:
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /etc/timezone:/etc/timezone:ro
-            - /etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
-            - /var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-            - /var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-            - /var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
-            - /sys/block:/sys/block:ro
+            - /proc:/proc
+            - /sys:/sys
+            - /dev:/dev
+            - /var/run/docker.sock:/var/run/docker.sock
         privileged: true
         pid: "host"
         restart: always

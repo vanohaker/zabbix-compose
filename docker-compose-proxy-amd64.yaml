@@ -20,3 +20,24 @@ services:
             - ZBX_SERVER_HOST=zabbix.vanohaker.online
             - ZBX_SERVER_PORT=10051
             - ZBX_DEBUGLEVEL=1
+            - ZBX_PROXYMODE=1 # 0 - active proxy and 1 - passive proxy.
+    agent:
+        image: zabbix/zabbix-agent:alpine-latest
+        ports:
+            - "10050:10050"
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /etc/timezone:/etc/timezone:ro
+            - /etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
+            - /var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+            - /var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+            - /var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+            - /sys/block:/sys/block:ro
+        privileged: true
+        pid: "host"
+        restart: always
+        depends_on:
+            - proxy
+        environment:
+            - ZBX_SERVER_HOST=proxy
+            - ZBX_DEBUGLEVEL=1

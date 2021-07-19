@@ -27,6 +27,53 @@ POSTGRES_PASSWORD=zabbix
 POSTGRES_DB=zabbixNew
 ```
 
+# Passive и Active mode
+## Passive mode
+![Passive mode](https://github.com/vanohaker/zabbix-compose/blob/bc7653820f84f6b5749cee3c87a9d88d12893ffe/files/passive%20proxy.png)
+
+## Active mode
+![Active mode](https://github.com/vanohaker/zabbix-compose/blob/bc7653820f84f6b5749cee3c87a9d88d12893ffe/files/active%20proxy.png)
+
+# Быстрая настройка Wireguard для passive proxy через фаервол
+## Wireguard server
+```bash
+umask 077
+wg genkey | tee privatekey | wg pubkey > publickey
+```
+wg0.conf
+```
+[Interface]
+PrivateKey = server privatekey
+Address = 10.0.50.1/24
+ListenPort = 51820
+
+[Peer]
+PublicKey = client pubkey
+AllowedIPs = 10.0.50.2/32
+```
+```bash
+sudo systemctl enable wg-quick@wg0.service --now
+```
+## Wireguard client
+```bash
+umask 077
+wg genkey | tee privatekey | wg pubkey > publickey
+```
+wg0.conf
+```
+[Interface]
+Address = 10.0.50.2/32
+PrivateKey = client privatekey
+
+[Peer]
+PublicKey = server pubkey
+Endpoint = <server-public-ip>:51820
+AllowedIPs = 10.0.50.1/32
+PersistentKeepalive = 5
+```
+```bash
+sudo systemctl enable wg-quick@wg0.service --now
+```
 # Старт и остановка сервера
 
 ## Старт
@@ -43,9 +90,6 @@ sudo rm -rf /var/lib/postgresql/data
 ```bash
 sudo docker-compose -f docker-compose-server-amd64.yaml down
 ```
-
-
-
 
 # Старт и остановка proxy
 ## Старт

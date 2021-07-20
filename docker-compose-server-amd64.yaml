@@ -26,6 +26,7 @@ services:
       - ZBX_DEBUGLEVEL=1
       - ZBX_HOUSEKEEPINGFREQUENCY=1
       - ZBX_MAXHOUSEKEEPERDELETE=5000
+      - ZBX_PROXYCONFIGFREQUENCY=3600 # Время синхронизации сек
   web-nginx-pgsql:
     image: zabbix/zabbix-web-nginx-pgsql:alpine-latest
     ports:

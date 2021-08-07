@@ -85,7 +85,7 @@ services:
     depends_on:
       - server
     environment:
-      - ZBX_SERVER_HOST=zabbix-server
+      - ZBX_SERVER_HOST=server
   postgres-server:
     image: postgres:latest
     volumes:
@@ -93,7 +93,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=zabbix
       - POSTGRES_USER=zabbix
-      - POSTGRES_DB=zabbix
+      - POSTGRES_DB=zabbixNew
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s

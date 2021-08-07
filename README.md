@@ -35,6 +35,10 @@ POSTGRES_DB=zabbixNew
 ![Active mode](https://github.com/vanohaker/zabbix-compose/blob/bc7653820f84f6b5749cee3c87a9d88d12893ffe/files/active%20proxy.png)
 
 # Быстрая настройка Wireguard для passive proxy через фаервол
+## Установка wireguard
+```bash
+sudo apt install wireguard
+```
 ## Wireguard server
 ```bash
 umask 077

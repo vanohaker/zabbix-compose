@@ -19,6 +19,13 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose
 
 sudo usermod -aG docker $USER
 ```
+# Установка Docker Compose
+На сегодняшний день самая свежая версия 2.15.1. Проверить наличие новой версии можно тут [Docker Compose GitHub](https://github.com/docker/compose/releases)
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+```
 
 ## Перед запуском сервера отредактируйте переменные в compose файле под себя
 ```bash
